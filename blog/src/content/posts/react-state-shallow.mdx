@@ -1,0 +1,122 @@
+---
+title: "Why shallow copying nested state objects in React can cause bugs?"
+description: "Learn how copying nested state objects affect state changes, and how to prevent bugs by ensuring state immutability"
+image: "../assets/react-state-shallow.png"
+createdAt: 05-14-2022
+draft: false
+tags:
+  - react
+---
+
+### Find the bug
+
+https://codepen.io/filtered/pen/ZErBveR
+
+
+Selecting an item in any one of the two lists causes the same item to get selected in the other list as well. 
+`samList` and `janeList` are supposed to be isolated but their state seems to accidentally shared. See if you can find what part of the code causes this issue.
+
+Couldn't find it. No problem, let's draw back a bit and find out why working with nested objects such as above can be tricky.
+
+### Immutability in React
+
+React requires the state to be immutable which means every time a state variable has to be updated, it can't be done directly. One must create a new variable and pass it to the state's setter function (`setState`).
+
+React does so because it uses virtual DOM. Any state changes are reflected in this virtual DOM.
+
+Before every mutation to the actual DOM, react compiler compares the virtual DOM to the version before state change through the process called reconciliation. Having the state immutable makes this process faster as one can check for change in state using reference equality operator `(===)`.
+
+Read more about **Immutability** in React on [here](https://blog.logrocket.com/immutability-in-react-ebe55253a1cc)
+
+In order to maintain immutability in state updates one must be extra careful when working with nested objects as all standard built-in object-copy operations in Javascript (`...` spread syntax, `Array.prototype.concat()`, `Array.prototype.slice()`, `Array.from()`, `Object.assign()`, and `Object.create()`) create shallow copies rather than deep copies.
+
+You may wonder why shallow copying state can cause bugs. The answer lies in how objects in Javascript work.
+
+### Shallow vs Deep Copy
+
+
+```js
+const objOne = { a: 1, b: 2, c: 3, d: 4 };
+
+const objX = objOne;
+const objY = { ...objOne };
+console.log(objX === objOne); // true
+console.log(objY === objOne); // false
+```
+
+`objX` and `objOne` hold the reference to same address in memory, hence reference equality of the two returns true. While `objY` is created by copying `objOne` and both point to different addresses in memory, hence their reference equality returns false.
+
+Things get slightly precarious when using built-in object-copy operators to copy nested objects.
+
+```js
+let objTwo = {a: 1, b: 2, c: 3, d: { x: 1, y: 2 }};
+
+let objM = { ...objTwo };
+
+console.log(objM === objTwo); // false
+console.log(objM.d === objTwo.d); // true
+
+// Before modification
+console.log(objM.d, objTwo.d); // {x: 1, y: 2}, {x: 1, y: 2}
+
+objTwo.d.x = 100;
+
+// After modification
+console.log(objM.d, objTwo.d); // {x: 100, y: 2}, {x: 100, y: 2}
+
+objM = JSON.parse(JSON.stringify(objTwo)); // deep copy
+
+console.log(objM.d === objTwo.d); // false
+
+```
+
+On copying `objTwo` into `objM` using spread operator, `objM.d === objTwo.d` returns true because spread operator performs a shallow copy which basically means certain properties or sub-properties of the newly created objected are still connected to original object's properties. For example, here `objM.d` and `objTwo.d` refer to same address in memory. This also means changing one will change another unless you do re-assignment.
+
+According to MDN,
+
+> A shallow copy of an object is a copy whose properties share the same references (point to the same underlying values) as those of the source object from which the copy was made. As a result, when you change either the source or the copy, you may also cause the other object to change too — and so, you may end up unintentionally causing changes to the source or copy that you don't expect. That behavior contrasts with the behavior of a deep copy, in which the source and copy are completely independent.
+
+### Fixing the bug
+
+Now coming back to the bug in the react codepen. The code which causes it is on `Line 22` and `Line 33` (in both toggle handlers).
+
+```js
+
+const handleSamListToggle = (e, id) => {
+   const prev = samList;
+   const newList = prev.map((item) => {
+      if (item.id === id) {
+        item.hasBought = e.target.checked;
+      }
+      return item; // Bug
+    });
+    setSamList(newList);
+  };
+```
+
+Although `prev` array is a new array, the items in it point to the original groceries array which is used to initialize both the state lists (`samList` and `janeList`). These two lists have item objects nested in them and each corresponding item refers to the same memory address. And we saw earlier changing one will cause another to change too.
+
+```js
+console.log(samList[0] === janeList[0]); // true
+// Item in the lists refer to same value in memory.
+```
+
+If we spread the item object while mutating the state on toggle, this would copy the values in it and items in `samList` and `janeList` will no longer refer to same values. This would solve the bug.
+
+```js
+const handleSamListToggle = (e, id) => {
+   const prev = samList;
+   const newList = prev.map((item) => {
+      if (item.id === id) {
+        item.hasBought = e.target.checked;
+      }
+      return {...item}; // Fix
+    });
+    setSamList(newList);
+  };
+
+console.log(samList[0] === janeList[0]); // false
+```
+
+To summarize, deep copy your state object whenever you want to change the value of its nested properties else it could lead to bugs which could be harder to track. 
+

@@ -1,0 +1,28 @@
+[
+  {
+    "id": 1,
+    "icon": {
+      "type": "lucide",
+      "name": "terminal"
+    },
+    "text": "Software Developer"
+  },
+  {
+    "id": 2,
+    "icon": {
+      "type": "lucide",
+      "name": "book"
+    },
+    "type": "lucide",
+    "text": "Wordsmith-in-Training"
+  },
+  {
+    "id": 3,
+    "icon": {
+      "type": "lucide",
+      "name": "earth"
+    },
+    "type": "lucide",
+    "text": "Occasional Traveler"
+  }
+]

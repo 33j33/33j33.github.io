@@ -1,0 +1,164 @@
+<!DOCTYPE html><html lang="en"> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><meta name="generator" content="Astro v5.7.10"><title>Why shallow copying nested state objects in React can cause bugs?</title><meta name="description" content="Learn how copying nested state objects affect state changes, and how to prevent bugs by ensuring state immutability"><meta name="theme-color" content="#8c5cf5"><link rel="canonical" href="https://33j33.github.io/"><meta name="og:title" content="Why shallow copying nested state objects in React can cause bugs?"><meta name="og:description" content="Learn how copying nested state objects affect state changes, and how to prevent bugs by ensuring state immutability"><meta name="og:image" content="/_astro/react-state-shallow.DZ2j0wVA.png"><meta name="og:url" content="https://33j33.github.io/"><meta name="og:locale" content="en"><meta name="og:type" content="article">
+			<meta property="article:published_time" content="2022-05-13T18:30:00.000Z">
+			<meta name="author" content="Ornithopter"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Why shallow copying nested state objects in React can cause bugs?"><meta name="twitter:description" content="Learn how copying nested state objects affect state changes, and how to prevent bugs by ensuring state immutability"><meta name="twitter:image" content="/_astro/react-state-shallow.DZ2j0wVA.png"><style>article h1,article h2,article h3,article h4{scroll-margin:4rem;margin-top:2rem}article{line-height:1.6;min-width:0}article hr{height:1px;border:none;background-color:#353535}p:has(img){display:flex;align-items:center;justify-content:center;margin-top:1rem;margin-bottom:1rem}p img{max-width:100%}.toc-card{min-width:0}.toc-card ol{padding:0;display:flex;flex-direction:column;gap:.5rem;margin-bottom:0;list-style-type:none;position:relative}.toc-card ol li a{color:#c7c7c7;font-size:.925rem;padding:.25rem .5rem;box-decoration-break:clone;-webkit-box-decoration-break:clone}.toc-card ol li a:hover{color:#fff;text-decoration:none}.toc-li[data-depth="3"]{margin-left:1rem}.toc-li[data-depth="4"]{margin-left:2rem}.no-mt{margin-top:0}ol li a.active{color:#fff;background:var(--primary)}.left{height:100%;position:relative}.toc-card{position:sticky;top:2rem}.article-header{position:relative;width:100%;height:fit-content;scroll-margin-top:2rem}.header{display:flex;flex-direction:column;gap:.5rem;position:absolute;bottom:1.5rem;left:1rem;max-width:calc(100% - 3rem);z-index:2}.article-h1{margin-bottom:0;font-size:2em;background:#fff;padding:.25rem .675rem;box-decoration-break:clone;-webkit-box-decoration-break:clone;position:relative;line-height:1.2;display:inline;color:#000}.article-info{display:flex;flex-direction:row;gap:.5rem;font-family:Ghost Mono,monospace;background:#fff;color:#000;box-decoration-break:clone;-webkit-box-decoration-break:clone;padding:0 .75rem;width:fit-content}@media screen and (max-width: 640px){.header{position:relative;bottom:0;left:0;width:fit-content;max-width:none;margin-top:1rem}.article-h1{display:inline;background-color:transparent;padding:0;color:#fff}.article-info{display:block;background-color:transparent;padding:0;color:#fff}}code:not(.astro-code code){background-color:#353535;padding:.125rem .25rem;font-size:.925rem}.article-image{width:100%;height:auto;z-index:1}.end-of-article{margin-top:1rem;margin-bottom:1.5rem;width:100%;height:1px;background-color:#353535;border:none}blockquote{border-left:2px solid var(--primary);padding:.75rem 1rem;margin-left:0;background-color:rgba(var(--primary-rgb),.25);width:100%}blockquote p{margin-top:0;margin-bottom:0}table{margin-top:1rem;text-align:left;border-spacing:0;border-collapse:collapse}table th{padding:.5rem 1.5rem .5rem 0;border-bottom:1px solid #353535}table tbody{margin-top:1rem}table tbody tr{border-bottom:1px solid #353535}table tbody tr td{padding:.5rem 1.5rem .5rem 0}.glow-image[data-astro-cid-lwpf7n2j]{position:relative}.glow-image[data-astro-cid-lwpf7n2j] img[data-astro-cid-lwpf7n2j]{position:relative;z-index:1}.glow[data-astro-cid-lwpf7n2j]{position:absolute!important;top:0;left:0;z-index:0!important;filter:blur(8px)}
+.card[data-astro-cid-dohjnao5]{width:100%;height:auto;background-color:#121212;border:1px solid #353535;padding:1.5rem;overflow:hidden}.no-padding[data-astro-cid-dohjnao5]{padding:0}
+</style>
+<link rel="stylesheet" href="/_astro/index.BJhKo5tD.css">
+<style>.toc-card ol{padding:0;display:flex;flex-direction:column;gap:.5rem;margin-bottom:0;list-style-type:none;position:relative}.toc-card ol li a{color:#c7c7c7;font-size:.925rem;padding:.25rem .5rem;box-decoration-break:clone;-webkit-box-decoration-break:clone}.toc-card ol li a:hover{color:#fff;text-decoration:none}.toc-card ol li a.active{color:#fff;background:var(--primary)}.left{height:100%;position:relative}.toc-card{position:sticky;top:2rem}article{display:flex;flex-direction:column;gap:2rem}.comments *{border-color:#353535!important}@media screen and (max-width: 640px){article{gap:1rem}}
+</style></head> <body> <main> <nav data-astro-cid-5blmo7yk> <a class="site-title" href="/" data-astro-cid-5blmo7yk>Ornithopter</a> <ul data-astro-cid-5blmo7yk> <li data-astro-cid-5blmo7yk> <a href="/posts" data-astro-cid-5blmo7yk>Posts</a> </li> <li class="nav-separator" data-astro-cid-5blmo7yk>/</li> <li data-astro-cid-5blmo7yk> <a href="/projects" data-astro-cid-5blmo7yk>Projects</a> </li> <li class="nav-separator" data-astro-cid-5blmo7yk>/</li> <li data-astro-cid-5blmo7yk> <input id="search" type="text" placeholder="Search (Ctrl+K)" data-astro-cid-5blmo7yk> <div id="search-results" data-astro-cid-5blmo7yk></div> </li> </ul> <button class="mobile-nav-toggle" data-astro-cid-5blmo7yk> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" class="menu-closed" data-astro-cid-5blmo7yk="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 12h16M4 6h16M4 18h16"/></svg> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" class="menu-open" data-astro-cid-5blmo7yk="true"><path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 6L6 18M6 6l12 12"/></svg> </button> </nav> <script>
+  const searchElement = document.querySelector('#search');
+  const results = document.querySelector('#search-results');
+  const navToggle = document.querySelector('.mobile-nav-toggle');
+
+  let focusIndex = -1;
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'k' && e.ctrlKey) {
+      searchElement.focus();
+    }
+
+    if (e.key === 'Escape') {
+      searchElement.blur();
+      results.classList.remove('active');
+      focusIndex = -1;
+    }
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+
+      focusIndex++;
+      const results = document.querySelectorAll('#search-results a');
+
+      if (focusIndex >= results.length) {
+        focusIndex = 0;
+      }
+
+      results[focusIndex]?.focus();
+    }
+
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+
+      focusIndex--;
+      const results = document.querySelectorAll('#search-results a');
+
+      if (focusIndex < 0) {
+        focusIndex = results.length - 1;
+      }
+
+      results[focusIndex]?.focus();
+    }
+  });
+
+  searchElement?.addEventListener('focus', () => {
+    searchElement.placeholder = '';
+    results.classList.add('active');
+  });
+
+  searchElement?.addEventListener('blur', () => {
+    searchElement.placeholder = 'Search (Ctrl+K)';
+  });
+
+  searchElement?.addEventListener('blur', () => {
+    setTimeout(() => {
+      if (!document.activeElement?.closest('#search-results')) {
+        results.classList.remove('active');
+        focusIndex = -1;
+      }
+    }, 1);
+  });
+
+  results?.addEventListener('focusout', (e) => {
+    if (!e.relatedTarget?.closest('#search-results')) {
+      results.classList.remove('active');
+      focusIndex = -1;
+    }
+  });
+
+  searchElement?.addEventListener('input', async (e) => {
+    if (e.target.dataset.loaded !== 'true') {
+      e.target.dataset.loaded = 'true';
+
+      window.pagefind = await import("/pagefind/pagefind.js");
+    }
+
+    results.innerHTML = '';
+
+    const search = await window.pagefind.search(e.target.value);
+
+    let i = 0;
+    for (const result of search.results) {
+      i++;
+
+      const data = await result.data();
+      
+      results.innerHTML += `
+        <a href="${data.url}">
+          <h3 class="no-mt">${data.meta.title}</h3>
+          <p>${data.excerpt}</p>
+        </a>
+        ${i < search.results.length ? '<hr class="separator">' : ''}
+      `;
+    }
+
+    if (search.results.length === 0 && e.target.value.length > 0) {
+      results.innerHTML = '<p style="margin-top: 0;">No results found</p>';
+    }
+
+    results.classList.add('active');
+  });
+
+  navToggle?.addEventListener('click', () => {
+    navToggle.classList.toggle('active');
+    document.querySelector('nav').classList.toggle('active');
+  });
+
+  const handleTabletChange = () => {
+    if (window.matchMedia('(max-width: 640px)').matches) {
+      searchElement.placeholder = 'Search';
+    } else {
+      searchElement.placeholder = 'Search (Ctrl+K)';
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', handleTabletChange);
+  document.addEventListener('resize', handleTabletChange);
+</script>   <div class="layout-grid" data-astro-cid-cgyg4spe> <div class="left"> <div class="card toc-card" data-astro-cid-dohjnao5>  <h2 class="no-mt">Table of contents</h2> <ol> <li class="toc-li"> <a href="#_top" class="active">Why shallow copying nested state objects in React can cause bugs?</a> </li> <li class="toc-li" data-depth="3"> <a href="#find-the-bug">Find the bug</a> </li><li class="toc-li" data-depth="3"> <a href="#immutability-in-react">Immutability in React</a> </li><li class="toc-li" data-depth="3"> <a href="#shallow-vs-deep-copy">Shallow vs Deep Copy</a> </li><li class="toc-li" data-depth="3"> <a href="#fixing-the-bug">Fixing the bug</a> </li> </ol>  </div>  </div> <article data-pagefind-body> <div class="card" data-astro-cid-dohjnao5>  <div class="article-header" id="_top" data-pagefind-ignore> <div class="glow-image" data-astro-cid-lwpf7n2j> <img src="/_astro/react-state-shallow.DZ2j0wVA_Z1Cgrm7.webp" alt="Why shallow copying nested state objects in React can cause bugs?" data-astro-cid-lwpf7n2j="true" width="1588" height="776" loading="lazy" decoding="async" class="article-image"> <img src="/_astro/react-state-shallow.DZ2j0wVA_Z1QS0r.webp" alt="Why shallow copying nested state objects in React can cause bugs?" data-astro-cid-lwpf7n2j="true" width="1588" height="776" loading="lazy" decoding="async" class="article-image glow article-image"> </div>  <div class="header"> <div> <h1 class="no-mt article-h1">Why shallow copying nested state objects in React can cause bugs?</h1> </div> <div class="article-info"> <span>5/14/2022</span> <span>/</span> <span>8 minutes to read</span> <span>/</span> <span>Tags: react</span> </div> </div> </div> <h3 id="find-the-bug">Find the bug</h3>
+<iframe id="cp_embed_ZErBveR" src="https://codepen.io/filtered/embed/preview/ZErBveR?default-tabs=js%2Cresult&height=300&host=https%3A%2F%2Fcodepen.io&slug-hash=ZErBveR" title="React | Copying Nested State Object" scrolling="no" frameborder="0" height="300" allowtransparency="true" class="cp_embed_iframe" style="width:100%;overflow:hidden"></iframe>
+<p>Selecting an item in any one of the two lists causes the same item to get selected in the other list as well.
+<code>samList</code> and <code>janeList</code> are supposed to be isolated but their state seems to accidentally shared. See if you can find what part of the code causes this issue.</p>
+<p>Couldn’t find it. No problem, let’s draw back a bit and find out why working with nested objects such as above can be tricky.</p>
+<h3 id="immutability-in-react">Immutability in React</h3>
+<p>React requires the state to be immutable which means every time a state variable has to be updated, it can’t be done directly. One must create a new variable and pass it to the state’s setter function (<code>setState</code>).</p>
+<p>React does so because it uses virtual DOM. Any state changes are reflected in this virtual DOM.</p>
+<p>Before every mutation to the actual DOM, react compiler compares the virtual DOM to the version before state change through the process called reconciliation. Having the state immutable makes this process faster as one can check for change in state using reference equality operator <code>(===)</code>.</p>
+<p>Read more about <strong>Immutability</strong> in React on <a href="https://blog.logrocket.com/immutability-in-react-ebe55253a1cc">here</a></p>
+<p>In order to maintain immutability in state updates one must be extra careful when working with nested objects as all standard built-in object-copy operations in Javascript (<code>...</code> spread syntax, <code>Array.prototype.concat()</code>, <code>Array.prototype.slice()</code>, <code>Array.from()</code>, <code>Object.assign()</code>, and <code>Object.create()</code>) create shallow copies rather than deep copies.</p>
+<p>You may wonder why shallow copying state can cause bugs. The answer lies in how objects in Javascript work.</p>
+<h3 id="shallow-vs-deep-copy">Shallow vs Deep Copy</h3>
+<div class="expressive-code"><link rel="stylesheet" href="/_astro/ec.23l6f.css"/><script type="module" src="/_astro/ec.8zarh.js"></script><figure class="frame"><figcaption class="header"></figcaption><pre data-language="js"><code><div class="ec-line"><div class="code"><span style="--0:#F97583">const</span><span style="--0:#E1E4E8"> </span><span style="--0:#79B8FF">objOne</span><span style="--0:#E1E4E8"> </span><span style="--0:#F97583">=</span><span style="--0:#E1E4E8"> { a: </span><span style="--0:#79B8FF">1</span><span style="--0:#E1E4E8">, b: </span><span style="--0:#79B8FF">2</span><span style="--0:#E1E4E8">, c: </span><span style="--0:#79B8FF">3</span><span style="--0:#E1E4E8">, d: </span><span style="--0:#79B8FF">4</span><span style="--0:#E1E4E8"> };</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#F97583">const</span><span style="--0:#E1E4E8"> </span><span style="--0:#79B8FF">objX</span><span style="--0:#E1E4E8"> </span><span style="--0:#F97583">=</span><span style="--0:#E1E4E8"> objOne;</span></div></div><div class="ec-line"><div class="code"><span style="--0:#F97583">const</span><span style="--0:#E1E4E8"> </span><span style="--0:#79B8FF">objY</span><span style="--0:#E1E4E8"> </span><span style="--0:#F97583">=</span><span style="--0:#E1E4E8"> { </span><span style="--0:#F97583">...</span><span style="--0:#E1E4E8">objOne };</span></div></div><div class="ec-line"><div class="code"><span style="--0:#E1E4E8">console.</span><span style="--0:#B392F0">log</span><span style="--0:#E1E4E8">(objX </span><span style="--0:#F97583">===</span><span style="--0:#E1E4E8"> objOne); </span><span style="--0:#90979F">// true</span></div></div><div class="ec-line"><div class="code"><span style="--0:#E1E4E8">console.</span><span style="--0:#B392F0">log</span><span style="--0:#E1E4E8">(objY </span><span style="--0:#F97583">===</span><span style="--0:#E1E4E8"> objOne); </span><span style="--0:#90979F">// false</span></div></div></code></pre><div class="copy"><button title="Copy to clipboard" data-copied="Copied!" data-code="const objOne = { a: 1, b: 2, c: 3, d: 4 };const objX = objOne;const objY = { ...objOne };console.log(objX === objOne); // trueconsole.log(objY === objOne); // false"><div></div></button></div></figure></div>
+<p><code>objX</code> and <code>objOne</code> hold the reference to same address in memory, hence reference equality of the two returns true. While <code>objY</code> is created by copying <code>objOne</code> and both point to different addresses in memory, hence their reference equality returns false.</p>
+<p>Things get slightly precarious when using built-in object-copy operators to copy nested objects.</p>
+<div class="expressive-code"><figure class="frame"><figcaption class="header"></figcaption><pre data-language="js"><code><div class="ec-line"><div class="code"><span style="--0:#F97583">let</span><span style="--0:#E1E4E8"> objTwo </span><span style="--0:#F97583">=</span><span style="--0:#E1E4E8"> {a: </span><span style="--0:#79B8FF">1</span><span style="--0:#E1E4E8">, b: </span><span style="--0:#79B8FF">2</span><span style="--0:#E1E4E8">, c: </span><span style="--0:#79B8FF">3</span><span style="--0:#E1E4E8">, d: { x: </span><span style="--0:#79B8FF">1</span><span style="--0:#E1E4E8">, y: </span><span style="--0:#79B8FF">2</span><span style="--0:#E1E4E8"> }};</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#F97583">let</span><span style="--0:#E1E4E8"> objM </span><span style="--0:#F97583">=</span><span style="--0:#E1E4E8"> { </span><span style="--0:#F97583">...</span><span style="--0:#E1E4E8">objTwo };</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#E1E4E8">console.</span><span style="--0:#B392F0">log</span><span style="--0:#E1E4E8">(objM </span><span style="--0:#F97583">===</span><span style="--0:#E1E4E8"> objTwo); </span><span style="--0:#90979F">// false</span></div></div><div class="ec-line"><div class="code"><span style="--0:#E1E4E8">console.</span><span style="--0:#B392F0">log</span><span style="--0:#E1E4E8">(objM.d </span><span style="--0:#F97583">===</span><span style="--0:#E1E4E8"> objTwo.d); </span><span style="--0:#90979F">// true</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#90979F">// Before modification</span></div></div><div class="ec-line"><div class="code"><span style="--0:#E1E4E8">console.</span><span style="--0:#B392F0">log</span><span style="--0:#E1E4E8">(objM.d, objTwo.d); </span><span style="--0:#90979F">// {x: 1, y: 2}, {x: 1, y: 2}</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#E1E4E8">objTwo.d.x </span><span style="--0:#F97583">=</span><span style="--0:#E1E4E8"> </span><span style="--0:#79B8FF">100</span><span style="--0:#E1E4E8">;</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#90979F">// After modification</span></div></div><div class="ec-line"><div class="code"><span style="--0:#E1E4E8">console.</span><span style="--0:#B392F0">log</span><span style="--0:#E1E4E8">(objM.d, objTwo.d); </span><span style="--0:#90979F">// {x: 100, y: 2}, {x: 100, y: 2}</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#E1E4E8">objM </span><span style="--0:#F97583">=</span><span style="--0:#E1E4E8"> </span><span style="--0:#79B8FF">JSON</span><span style="--0:#E1E4E8">.</span><span style="--0:#B392F0">parse</span><span style="--0:#E1E4E8">(</span><span style="--0:#79B8FF">JSON</span><span style="--0:#E1E4E8">.</span><span style="--0:#B392F0">stringify</span><span style="--0:#E1E4E8">(objTwo)); </span><span style="--0:#90979F">// deep copy</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#E1E4E8">console.</span><span style="--0:#B392F0">log</span><span style="--0:#E1E4E8">(objM.d </span><span style="--0:#F97583">===</span><span style="--0:#E1E4E8"> objTwo.d); </span><span style="--0:#90979F">// false</span></div></div></code></pre><div class="copy"><button title="Copy to clipboard" data-copied="Copied!" data-code="let objTwo = {a: 1, b: 2, c: 3, d: { x: 1, y: 2 }};let objM = { ...objTwo };console.log(objM === objTwo); // falseconsole.log(objM.d === objTwo.d); // true// Before modificationconsole.log(objM.d, objTwo.d); // {x: 1, y: 2}, {x: 1, y: 2}objTwo.d.x = 100;// After modificationconsole.log(objM.d, objTwo.d); // {x: 100, y: 2}, {x: 100, y: 2}objM = JSON.parse(JSON.stringify(objTwo)); // deep copyconsole.log(objM.d === objTwo.d); // false"><div></div></button></div></figure></div>
+<p>On copying <code>objTwo</code> into <code>objM</code> using spread operator, <code>objM.d === objTwo.d</code> returns true because spread operator performs a shallow copy which basically means certain properties or sub-properties of the newly created objected are still connected to original object’s properties. For example, here <code>objM.d</code> and <code>objTwo.d</code> refer to same address in memory. This also means changing one will change another unless you do re-assignment.</p>
+<p>According to MDN,</p>
+<blockquote>
+<p>A shallow copy of an object is a copy whose properties share the same references (point to the same underlying values) as those of the source object from which the copy was made. As a result, when you change either the source or the copy, you may also cause the other object to change too — and so, you may end up unintentionally causing changes to the source or copy that you don’t expect. That behavior contrasts with the behavior of a deep copy, in which the source and copy are completely independent.</p>
+</blockquote>
+<h3 id="fixing-the-bug">Fixing the bug</h3>
+<p>Now coming back to the bug in the react codepen. The code which causes it is on <code>Line 22</code> and <code>Line 33</code> (in both toggle handlers).</p>
+<div class="expressive-code"><figure class="frame"><figcaption class="header"></figcaption><pre data-language="js"><code><div class="ec-line"><div class="code"><span style="--0:#F97583">const</span><span style="--0:#E1E4E8"> </span><span style="--0:#B392F0">handleSamListToggle</span><span style="--0:#E1E4E8"> </span><span style="--0:#F97583">=</span><span style="--0:#E1E4E8"> (</span><span style="--0:#FFAB70">e</span><span style="--0:#E1E4E8">, </span><span style="--0:#FFAB70">id</span><span style="--0:#E1E4E8">) </span><span style="--0:#F97583">=&gt;</span><span style="--0:#E1E4E8"> {</span></div></div><div class="ec-line"><div class="code"><span class="indent">   </span><span style="--0:#F97583">const</span><span style="--0:#E1E4E8"> </span><span style="--0:#79B8FF">prev</span><span style="--0:#E1E4E8"> </span><span style="--0:#F97583">=</span><span style="--0:#E1E4E8"> samList;</span></div></div><div class="ec-line"><div class="code"><span class="indent">   </span><span style="--0:#F97583">const</span><span style="--0:#E1E4E8"> </span><span style="--0:#79B8FF">newList</span><span style="--0:#E1E4E8"> </span><span style="--0:#F97583">=</span><span style="--0:#E1E4E8"> prev.</span><span style="--0:#B392F0">map</span><span style="--0:#E1E4E8">((</span><span style="--0:#FFAB70">item</span><span style="--0:#E1E4E8">) </span><span style="--0:#F97583">=&gt;</span><span style="--0:#E1E4E8"> {</span></div></div><div class="ec-line"><div class="code"><span class="indent">      </span><span style="--0:#F97583">if</span><span style="--0:#E1E4E8"> (item.id </span><span style="--0:#F97583">===</span><span style="--0:#E1E4E8"> id) {</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#E1E4E8">        </span></span><span style="--0:#E1E4E8">item.hasBought </span><span style="--0:#F97583">=</span><span style="--0:#E1E4E8"> e.target.checked;</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#E1E4E8">      </span></span><span style="--0:#E1E4E8">}</span></div></div><div class="ec-line"><div class="code"><span class="indent">      </span><span style="--0:#F97583">return</span><span style="--0:#E1E4E8"> item; </span><span style="--0:#90979F">// Bug</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#E1E4E8">    </span></span><span style="--0:#E1E4E8">});</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#B392F0">setSamList</span><span style="--0:#E1E4E8">(newList);</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#E1E4E8">  </span></span><span style="--0:#E1E4E8">};</span></div></div></code></pre><div class="copy"><button title="Copy to clipboard" data-copied="Copied!" data-code="const handleSamListToggle = (e, id) => {   const prev = samList;   const newList = prev.map((item) => {      if (item.id === id) {        item.hasBought = e.target.checked;      }      return item; // Bug    });    setSamList(newList);  };"><div></div></button></div></figure></div>
+<p>Although <code>prev</code> array is a new array, the items in it point to the original groceries array which is used to initialize both the state lists (<code>samList</code> and <code>janeList</code>). These two lists have item objects nested in them and each corresponding item refers to the same memory address. And we saw earlier changing one will cause another to change too.</p>
+<div class="expressive-code"><figure class="frame"><figcaption class="header"></figcaption><pre data-language="js"><code><div class="ec-line"><div class="code"><span style="--0:#E1E4E8">console.</span><span style="--0:#B392F0">log</span><span style="--0:#E1E4E8">(samList[</span><span style="--0:#79B8FF">0</span><span style="--0:#E1E4E8">] </span><span style="--0:#F97583">===</span><span style="--0:#E1E4E8"> janeList[</span><span style="--0:#79B8FF">0</span><span style="--0:#E1E4E8">]); </span><span style="--0:#90979F">// true</span></div></div><div class="ec-line"><div class="code"><span style="--0:#90979F">// Item in the lists refer to same value in memory.</span></div></div></code></pre><div class="copy"><button title="Copy to clipboard" data-copied="Copied!" data-code="console.log(samList[0] === janeList[0]); // true// Item in the lists refer to same value in memory."><div></div></button></div></figure></div>
+<p>If we spread the item object while mutating the state on toggle, this would copy the values in it and items in <code>samList</code> and <code>janeList</code> will no longer refer to same values. This would solve the bug.</p>
+<div class="expressive-code"><figure class="frame"><figcaption class="header"></figcaption><pre data-language="js"><code><div class="ec-line"><div class="code"><span style="--0:#F97583">const</span><span style="--0:#E1E4E8"> </span><span style="--0:#B392F0">handleSamListToggle</span><span style="--0:#E1E4E8"> </span><span style="--0:#F97583">=</span><span style="--0:#E1E4E8"> (</span><span style="--0:#FFAB70">e</span><span style="--0:#E1E4E8">, </span><span style="--0:#FFAB70">id</span><span style="--0:#E1E4E8">) </span><span style="--0:#F97583">=&gt;</span><span style="--0:#E1E4E8"> {</span></div></div><div class="ec-line"><div class="code"><span class="indent">   </span><span style="--0:#F97583">const</span><span style="--0:#E1E4E8"> </span><span style="--0:#79B8FF">prev</span><span style="--0:#E1E4E8"> </span><span style="--0:#F97583">=</span><span style="--0:#E1E4E8"> samList;</span></div></div><div class="ec-line"><div class="code"><span class="indent">   </span><span style="--0:#F97583">const</span><span style="--0:#E1E4E8"> </span><span style="--0:#79B8FF">newList</span><span style="--0:#E1E4E8"> </span><span style="--0:#F97583">=</span><span style="--0:#E1E4E8"> prev.</span><span style="--0:#B392F0">map</span><span style="--0:#E1E4E8">((</span><span style="--0:#FFAB70">item</span><span style="--0:#E1E4E8">) </span><span style="--0:#F97583">=&gt;</span><span style="--0:#E1E4E8"> {</span></div></div><div class="ec-line"><div class="code"><span class="indent">      </span><span style="--0:#F97583">if</span><span style="--0:#E1E4E8"> (item.id </span><span style="--0:#F97583">===</span><span style="--0:#E1E4E8"> id) {</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#E1E4E8">        </span></span><span style="--0:#E1E4E8">item.hasBought </span><span style="--0:#F97583">=</span><span style="--0:#E1E4E8"> e.target.checked;</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#E1E4E8">      </span></span><span style="--0:#E1E4E8">}</span></div></div><div class="ec-line"><div class="code"><span class="indent">      </span><span style="--0:#F97583">return</span><span style="--0:#E1E4E8"> {</span><span style="--0:#F97583">...</span><span style="--0:#E1E4E8">item}; </span><span style="--0:#90979F">// Fix</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#E1E4E8">    </span></span><span style="--0:#E1E4E8">});</span></div></div><div class="ec-line"><div class="code"><span class="indent">    </span><span style="--0:#B392F0">setSamList</span><span style="--0:#E1E4E8">(newList);</span></div></div><div class="ec-line"><div class="code"><span class="indent"><span style="--0:#E1E4E8">  </span></span><span style="--0:#E1E4E8">};</span></div></div><div class="ec-line"><div class="code">
+</div></div><div class="ec-line"><div class="code"><span style="--0:#E1E4E8">console.</span><span style="--0:#B392F0">log</span><span style="--0:#E1E4E8">(samList[</span><span style="--0:#79B8FF">0</span><span style="--0:#E1E4E8">] </span><span style="--0:#F97583">===</span><span style="--0:#E1E4E8"> janeList[</span><span style="--0:#79B8FF">0</span><span style="--0:#E1E4E8">]); </span><span style="--0:#90979F">// false</span></div></div></code></pre><div class="copy"><button title="Copy to clipboard" data-copied="Copied!" data-code="const handleSamListToggle = (e, id) => {   const prev = samList;   const newList = prev.map((item) => {      if (item.id === id) {        item.hasBought = e.target.checked;      }      return {...item}; // Fix    });    setSamList(newList);  };console.log(samList[0] === janeList[0]); // false"><div></div></button></div></figure></div>
+<p>To summarize, deep copy your state object whenever you want to change the value of its nested properties else it could lead to bugs which could be harder to track.</p> <hr class="end-of-article"> <a href="/blog" class="block-link" data-pagefind-ignore>← Back to blog</a>  </div>   </article> </div>   </main> <canvas id="bg-canvas"></canvas> <canvas id="overlay-canvas"></canvas> <script type="module" src="/_astro/Background.astro_astro_type_script_index_0_lang.Cl_PlrnR.js"></script> </body></html> <script type="module">const s=document.querySelectorAll(".toc-li a"),c=document.querySelectorAll("#_top, article h1, article h2, article h3, article h4"),n=new Map;for(const t of s){const e=t.href.split("#")[1],o=document.getElementById(e);o&&n.set(o,t)}function l(t){const e=t.getBoundingClientRect(),o=Math.max(document.documentElement.clientHeight,window.innerHeight);return!(e.bottom<0||e.top-o>=0)}const r=new IntersectionObserver(()=>{let t=null;for(const e of c){const o=l(e),i=n.get(e);if(o){i&&i.classList.add("active"),t||(t=e);break}}if(t){for(const e of n.keys())if(e!==t){const o=n.get(e);o&&o.classList.remove("active")}}},{threshold:0,root:null,rootMargin:"0px"});for(const t of c)r.observe(t);</script> 
