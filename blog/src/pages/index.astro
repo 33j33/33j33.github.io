@@ -4,6 +4,7 @@ import "../styles/index.css";
 import ProfilePicture from "../assets/openpeepofme.png";
 
 import Card from "../components/Card.astro";
+import PostCard from "../components/PostCard.astro";
 import Layout from "../layouts/Layout.astro";
 import Icon from "../components/Icon.astro";
 import { getCollection } from "astro:content";
@@ -78,13 +79,7 @@ const { Content: About } = await render(about!);
 			</div>
 			<div class="content-container">
 				{posts.sort((a, b) => b.data.createdAt.getTime() - a.data.createdAt.getTime()).slice(0, 2).map((post) => (
-					<a href={`/blog/${post.id}`} class="post-container">
-						<div class="post-header">
-							<h3>{post.data.title}</h3>
-							<span class="post-date">{post.data.createdAt.toLocaleDateString()}</span>
-						</div>
-						<span>{post.data.description}</span>
-					</a>
+					<PostCard link={`/posts/${post.id}`} title={post.data.title} description={post.data.description} createdAt={post.data.createdAt.toLocaleDateString()} tags={post.data.tags.map(tag => tag.id)}/> 
 				))}
 			</div>
 		</Card>
@@ -95,12 +90,7 @@ const { Content: About } = await render(about!);
 			</div>
 			<div class="content-container">
 				{projects.sort((a, b) => b.data.date.getTime() - a.data.date.getTime()).slice(0, 2).map((project) => (
-					<a href={project.data.link} class="post-container">
-						<div class="post-header">
-							<h3>{project.data.title}</h3>
-						</div>
-						<span>{project.data.description}</span>
-					</a>
+					<PostCard link={project.data.link} title={project.data.title} description={project.data.description} tags={project.data.tags.map(tag => tag.id)}/> 
 				))}
 			</div>
 		</Card>

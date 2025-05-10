@@ -6,6 +6,7 @@ import Card from "../components/Card.astro";
 import Icon from "../components/Icon.astro";
 import Layout from "../layouts/Layout.astro";
 import { openGraph } from "spectre:globals";
+import PostCard from "../components/PostCard.astro";
 
 const projects = await getCollection("projects");
 ---
@@ -33,12 +34,7 @@ const projects = await getCollection("projects");
 			</div>
 			<div class="content-container">
 				{projects.sort((a, b) => b.data.date.getTime() - a.data.date.getTime()).map((post) => (
-					<a href={post.data.link} class="post-container">
-						<div class="post-header" >
-							<h3 data-pagefind-body>{post.data.title}</h3>
-						</div>
-						<span>{post.data.description}</span>
-					</a>
+					<PostCard link={post.data.link} title={post.data.title} description={post.data.description} tags={post.data.tags.map((tag) => tag.id)}/>
 				))}
 			</div>
 		</Card>
