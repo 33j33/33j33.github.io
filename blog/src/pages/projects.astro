@@ -32,7 +32,7 @@ const projects = await getCollection("projects");
 				<Icon type='lucide' name="folder-git" width={24} height={24} class='glow-icon' />
 				<h2>Projects</h2>
 			</div>
-			<div class="content-container">
+			<div class="content-container" data-pagefind-body>
 				{projects.sort((a, b) => b.data.date.getTime() - a.data.date.getTime()).map((post) => (
 					<PostCard link={post.data.link} title={post.data.title} description={post.data.description} tags={post.data.tags.map((tag) => tag.id)}/>
 				))}
