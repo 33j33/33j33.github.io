@@ -82,7 +82,7 @@
 
   searchElement?.addEventListener('input', async (e) => {
     // only search if Pagefind is ready
-    if (!pagefindInitialized || !window.pagefind) {
+    if (!pagefindInitialized) {
       return;
     }
     results.innerHTML = '';
