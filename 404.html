@@ -49,12 +49,9 @@
     searchElement.placeholder = '';
     results.classList.add('active');
   });
-
+  
   searchElement?.addEventListener('blur', () => {
-    searchElement.placeholder = 'Search (Ctrl+K)';
-  });
-
-  searchElement?.addEventListener('blur', () => {
+    handleTabletChange()
     setTimeout(() => {
       if (!document.activeElement?.closest('#search-results')) {
         results.classList.remove('active');
@@ -80,8 +77,20 @@
     results.innerHTML = '';
 
     const search = await window.pagefind.search(e.target.value);
-    let i = 0;
+    const seenUrls = new Set();
+    const uniqueResults = [];
+
     for (const result of search.results) {
+      const data = await result.data();
+      console.log(data);
+      // Ensure we only show unique URLs
+      if (!seenUrls.has(data.url)) {
+        seenUrls.add(data.url);
+        uniqueResults.push(result);
+      }
+    }
+    let i = 0;
+    for (const result of uniqueResults) {
       i++;
 
       const data = await result.data();
