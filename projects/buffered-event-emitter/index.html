@@ -50,9 +50,22 @@
     }
   });
 
-  searchElement?.addEventListener('focus', () => {
+  let pagefindInitialized = false;
+
+  searchElement?.addEventListener('focus', async () => {
     searchElement.placeholder = '';
     results.classList.add('active');
+    
+    // initialize pagefind on first focus
+    if (!pagefindInitialized) {
+      try {
+        window.pagefind = await import("/pagefind/pagefind.js");
+        await window.pagefind.init();
+        pagefindInitialized = true;
+      } catch (error) {
+        console.error('Failed to initialize Pagefind:', error);
+      }
+    }
   });
   
   searchElement?.addEventListener('blur', () => {
@@ -73,29 +86,15 @@
   });
 
   searchElement?.addEventListener('input', async (e) => {
-    if (e.target.dataset.loaded !== 'true') {
-      e.target.dataset.loaded = 'true';
-
-      window.pagefind = await import("/pagefind/pagefind.js");
+    // only search if Pagefind is ready
+    if (!pagefindInitialized || !window.pagefind) {
+      return;
     }
-
     results.innerHTML = '';
 
     const search = await window.pagefind.search(e.target.value);
-    const seenUrls = new Set();
-    const uniqueResults = [];
-
-    for (const result of search.results) {
-      const data = await result.data();
-      console.log(data);
-      // Ensure we only show unique URLs
-      if (!seenUrls.has(data.url)) {
-        seenUrls.add(data.url);
-        uniqueResults.push(result);
-      }
-    }
     let i = 0;
-    for (const result of uniqueResults) {
+    for (const result of search.results) {
       i++;
 
       const data = await result.data();
